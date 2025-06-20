@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-OPENROUTER_API_KEY = os.getenv(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)
+OPENROUTER_API_KEY = os.getenv("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")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 async def call_openrouter(prompt: str):
