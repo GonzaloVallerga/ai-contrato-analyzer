@@ -2,5 +2,5 @@ fastapi
 uvicorn
 python-multipart
 pdfplumber
-requests
+httpx
 python-dotenv
