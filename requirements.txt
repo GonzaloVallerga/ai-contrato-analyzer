@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 python-multipart
-PyMuPDF==1.21.1
+pdfplumber
 requests
 python-dotenv
-fitz
