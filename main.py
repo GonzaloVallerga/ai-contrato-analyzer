@@ -1,12 +1,22 @@
-import os
+iimport os
 import httpx
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 import pdfplumber
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
+
+# CORS para frontend React
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 OPENROUTER_API_KEY = os.getenv(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)
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -17,7 +27,7 @@ async def call_openrouter(prompt: str):
         "Content-Type": "application/json"
     }
     json_data = {
-        "model": "gpt-4o-mini",
+        "model": "gpt-4o",  # Cambiá si querés gpt-4o-mini u otro
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2
     }
@@ -32,12 +42,11 @@ async def upload_pdf(file: UploadFile = File(...)):
     with pdfplumber.open(file.file) as pdf:
         text = ""
         for page in pdf.pages:
-            page_text = page.extract_text() or ""
-            text += page_text + "\n"
-    # Generar prompt para análisis:
+            text += page.extract_text() or ""
+            text += "\n"
     prompt = (
-        "Analiza este contrato de alquiler para identificar cláusulas abusivas, "
-        "recomendaciones y puntos de atención:\n\n" + text[:4000]  # limita texto para API
+        "Analizá este contrato de alquiler. Señalá cualquier cláusula abusiva, riesgosa o ambigua. "
+        "Dá recomendaciones legales breves para mejorarlo:\n\n" + text[:4000]
     )
     analysis = await call_openrouter(prompt)
     return {
