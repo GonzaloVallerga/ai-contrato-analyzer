@@ -9,7 +9,7 @@ load_dotenv()
 
 app = FastAPI()
 
-# Habilitar CORS si tenés frontend
+# CORS para frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,18 +18,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API KEY correctamente obtenida desde el .env
+# Leer API key de variable de entorno
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Llamada a OpenRouter
 async def call_openrouter(prompt: str):
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://tuapp.com",  # Cambiá por tu dominio o dejá esto para pruebas
+        "X-Title": "ContratoAnalyzer"
     }
     json_data = {
-        "model": "mistralai/mixtral-8x7b",
+        "model": "mistral/mistral-7b-instruct:free",  # ✅ MODELO GRATIS
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2
     }
@@ -39,7 +40,6 @@ async def call_openrouter(prompt: str):
         data = response.json()
         return data['choices'][0]['message']['content']
 
-# Endpoint para analizar PDF
 @app.post("/upload/")
 async def upload_pdf(file: UploadFile = File(...)):
     try:
@@ -63,5 +63,3 @@ async def upload_pdf(file: UploadFile = File(...)):
 
     except Exception as e:
         return {"error": str(e)}
-
-
