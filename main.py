@@ -9,7 +9,7 @@ load_dotenv()
 
 app = FastAPI()
 
-# CORS para frontend React
+# Habilitar CORS si tenés frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,16 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-OPENROUTER_API_KEY = os.getenv("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")
+# API KEY correctamente obtenida desde el .env
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
+# Llamada a OpenRouter
 async def call_openrouter(prompt: str):
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json"
     }
     json_data = {
-        "model": "gpt-4o",  # Cambiá si querés gpt-4o-mini u otro
+        "model": "gpt-4o",
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2
     }
@@ -37,19 +39,29 @@ async def call_openrouter(prompt: str):
         data = response.json()
         return data['choices'][0]['message']['content']
 
+# Endpoint para analizar PDF
 @app.post("/upload/")
 async def upload_pdf(file: UploadFile = File(...)):
-    with pdfplumber.open(file.file) as pdf:
-        text = ""
-        for page in pdf.pages:
-            text += page.extract_text() or ""
-            text += "\n"
-    prompt = (
-        "Analizá este contrato de alquiler. Señalá cualquier cláusula abusiva, riesgosa o ambigua. "
-        "Dá recomendaciones legales breves para mejorarlo:\n\n" + text[:4000]
-    )
-    analysis = await call_openrouter(prompt)
-    return {
-        "extracted_text": text[:1000],
-        "analysis": analysis
-    }
+    try:
+        with pdfplumber.open(file.file) as pdf:
+            text = ""
+            for page in pdf.pages:
+                text += page.extract_text() or ""
+                text += "\n"
+
+        prompt = (
+            "Analizá este contrato de alquiler. Señalá cualquier cláusula abusiva, riesgosa o ambigua. "
+            "Dá recomendaciones legales breves para mejorarlo:\n\n" + text[:4000]
+        )
+
+        analysis = await call_openrouter(prompt)
+
+        return {
+            "extracted_text": text[:1000],
+            "analysis": analysis
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
