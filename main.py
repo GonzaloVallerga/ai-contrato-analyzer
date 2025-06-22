@@ -30,7 +30,7 @@ async def call_openrouter(prompt: str):
         "X-Title": "ContratoAnalyzer"
     }
     json_data = {
-        "model": "mistral/mistral-7b-instruct:free",  # ✅ MODELO GRATIS
+        "model": "openai/gpt-3.5-turbo",  # ✅ MODELO GRATIS
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2
     }
