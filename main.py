@@ -1,4 +1,4 @@
-import os
+iimport os
 import httpx
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,7 +9,7 @@ load_dotenv()
 
 app = FastAPI()
 
-# CORS para frontend
+# Habilitar CORS si tenés frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,19 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Leer API key de variable de entorno
+# API KEY correctamente obtenida desde el .env
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
+# Llamada a OpenRouter
 async def call_openrouter(prompt: str):
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://tuapp.com",  # Cambiá por tu dominio o dejá esto para pruebas
-        "X-Title": "ContratoAnalyzer"
+        "Content-Type": "application/json"
     }
     json_data = {
-        "model": "openai/gpt-3.5-turbo",  # ✅ MODELO GRATIS
+        "model": "gpt-4o",
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2
     }
@@ -40,6 +39,7 @@ async def call_openrouter(prompt: str):
         data = response.json()
         return data['choices'][0]['message']['content']
 
+# Endpoint para analizar PDF
 @app.post("/upload/")
 async def upload_pdf(file: UploadFile = File(...)):
     try:
@@ -63,3 +63,4 @@ async def upload_pdf(file: UploadFile = File(...)):
 
     except Exception as e:
         return {"error": str(e)}
+
