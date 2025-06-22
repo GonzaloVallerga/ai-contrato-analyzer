@@ -29,7 +29,7 @@ async def call_openrouter(prompt: str):
         "Content-Type": "application/json"
     }
     json_data = {
-        "model": "gpt-4o",
+        "model": "mistralai/mixtral-8x7b",
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2
     }
