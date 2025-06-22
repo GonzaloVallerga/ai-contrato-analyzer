@@ -9,7 +9,7 @@ load_dotenv()
 
 app = FastAPI()
 
-# Habilitar CORS si tenés frontend
+# CORS para frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,28 +18,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API KEY correctamente obtenida desde el .env
+# Leer API key de variable de entorno
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Llamada a OpenRouter
 async def call_openrouter(prompt: str):
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://tuapp.com",  # Podés dejarlo así o usar tu dominio
+        "X-Title": "ContratoAnalyzer"
     }
     json_data = {
-        "model": "gpt-4o",
+        "model": "openai/gpt-3.5-turbo",  # ✅ MODELO GRATUITO
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(OPENROUTER_URL, headers=headers, json=json_data)
         response.raise_for_status()
         data = response.json()
         return data['choices'][0]['message']['content']
 
-# Endpoint para analizar PDF
 @app.post("/upload/")
 async def upload_pdf(file: UploadFile = File(...)):
     try:
